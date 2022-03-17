@@ -1,264 +1,210 @@
 ---
-title: "Linear Regression and Centrality"
+title: "Risk and Odds"
 output: html_notebook
 ---
 
-## Setup
+# Agenda
 
-We are going to discuss a couple of different data sets and a couple of different ideas tonight.
+- Review Midterm
+- Science, ethics, and reproduccibility.
+- Introduce two brand new statistical ideas: Risk Ratio and Odds Ratio
 
-```{r setup, include=FALSE}
-rm(list = ls())
-library(modelr)
+
+
+# Review Midterm
+
+- Open quiz.Rmd
+- Let's go through some answers.
+
+
+
+# Milgram Experiments
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xOYLCy5PVgM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+- After WWII, and the revelations of what had happened in Nazi Germany, and Imperial Japan, many Americas wanted to understand how and why people would commit such atrocities.
+- This is a fair question, and not one which we can fully answer today, although recent events and rhetoric dehumanizing political opponents should give us all pause.
+- Stanley Milgram, a Yale university professor designed a study to test the willingness of Americans to obey a authority figure.
+    - Test subjects were told they were helping develop a new learning technique.
+    - They were further told that no harm would come to anyone participating in the study.
+    - Milgram (and others) performed hundreds of variations all over the planet, with largely consistent results.
+    - This is arguably one of the best validated and reproduced psychological studies of all time.
+
+```{r echo=FALSE}
+url <- "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Milgram_experiment_v2.svg/378px-Milgram_experiment_v2.svg.png"
+knitr::include_graphics(url)
+```
+
+> The Study (from Wikipedia):
+> - "Experimenter" (E), who was in charge of the session.
+> - "Teacher" (T), a volunteer for a single session. The "teachers" were led to believe that they were merely assisting, whereas they were actually the subjects of the experiment.
+> - "Learner" (L), an actor and a confederate of the experimenter, who pretended to be a volunteer.
+> 
+> The subject and the actor arrived at the session together. The experimenter told them that they were taking part in "a scientific study of memory and learning", to see what the effect of punishment is on a subject's ability to memorize content. Also, he always clarified that the payment for their participation in the experiment was secured regardless of its development. The subject and actor drew slips of paper to determine their roles. Unknown to the subject, both slips said "teacher". The actor would always claim to have drawn the slip that read "learner", thus guaranteeing that the subject would always be the "teacher".
+> 
+> Next, the teacher and learner were taken into an adjacent room where the learner was strapped into what appeared to be an electric chair. The experimenter, dressed in a lab coat in order to appear to have more authority, told the participants this was to ensure that the learner would not escape. In a later variation of the experiment, the confederate would eventually plead for mercy and yell that he had a heart condition. At some point prior to the actual test, the teacher was given a sample electric shock from the electroshock generator in order to experience firsthand what the shock that the learner would supposedly receive during the experiment would feel like.
+> 
+> The teacher and learner were then separated so that they could communicate, but not see each other. The teacher was then given a list of word pairs that he was to teach the learner. The teacher began by reading the list of word pairs to the learner. The teacher would then read the first word of each pair and read four possible answers. The learner would press a button to indicate his response. If the answer was incorrect, the teacher would administer a shock to the learner, with the voltage increasing in 15-volt increments for each wrong answer (if correct, the teacher would read the next word pair.) The volts ranged from 15 to 450. The shock generator included verbal markings that vary from Slight Shock to Danger: Severe Shock.
+> 
+> The subjects believed that for each wrong answer the learner was receiving actual shocks. In reality, there were no shocks. After the learner was separated from the teacher, the learner set up a tape recorder integrated with the electroshock generator, which played pre recorded sounds for each shock level. As the voltage of the fake shocks increased, the learner began making audible protests, such as banging repeatedly on the wall that separated him from the teacher. In every condition the learner makes/says a predetermined sound or word. When the highest voltages were reached, the learner fell silent.
+> 
+> If at any time the teacher indicated a desire to halt the experiment, the experimenter was instructed to give specific verbal prods. The prods were, in this order:
+> 
+> 1. Please continue or Please go on.
+> 2. The experiment requires that you continue.
+> 3. It is absolutely essential that you continue.
+> 4. You have no other choice; you must go on.
+> 
+> Prod 2 could only be used if prod 1 was unsuccessful. If the subject still wished to stop after all four successive verbal prods, the experiment was halted. Otherwise, the experiment was halted after the subject had elicited the maximum 450-volt shock three times in succession.
+> 
+> The experimenter also had prods to use if the teacher made specific comments. If the teacher asked whether the learner might suffer permanent physical harm, the experimenter replied, "Although the shocks may be painful, there is no permanent tissue damage, so please go on." If the teacher said that the learner clearly wants to stop, the experimenter replied, "Whether the learner likes it or not, you must go on until he has learned all the word pairs correctly, so please go on."
+
+## Milgram - Villain or Hero?
+
+- Have you heard of Milgram before?
+- Milgram's experiments are often used in research ethics discussions as an example of what NOT to do.
+- But _one important_ thing Milgram got right was that he repeated his experiment more than once.
+    - In fact, he repeated it hundreds of times.
+    - He didn't simply want to get published. He wanted to understand if the psychology of Nazi Germany was unique or if other groups could fall victim to a similar psychology.
+        - I must assume he had not read about Imperial Japan, the Russian Communist Revolution, the French Revolution, etc?
+        - History has, unfortunately, provided us with a wealth of data on this topic.
+
+
+
+# Science Under Pressure
+
+- Our class focuses on the reproducibility and replicability crisis.
+- But science is under pressure from many other directions. Think about the "debates" around topics such as:
+    - Smoking
+    - Climate Change
+    - Covid
+- [The Big Lie](https://en.wikipedia.org/wiki/Big_lie)
+    - Tell a lie so colossal that no one would believe that someone "could have the impudence to distort the truth so infamously".
+    - Yep. We jumped from Milgram to Mein Kampf.
+- Leaders (CEOs, politicians, heads of research departments) often already "know" what they want the science to say.
+    - And they create incentives for researchers to prove them right.
+
+## Some Interesting Reading
+
+- [Do Scientists Feel Pressure To Produce Positive Results?](http://earthsky.org/human-world/do-scientists-feel-pressure-to-produce-positive-results)
+- [Fired Florida Data Scientist Launches A Coronavirus Dashboard Of Her Own](https://www.npr.org/2020/06/14/876584284/fired-florida-data-scientist-launches-a-coronavirus-dashboard-of-her-own)
+- [Data Scientist Rebekah Jones, Facing Arrest, Turns Herself In To Florida Authorities](https://www.npr.org/sections/coronavirus-live-updates/2021/01/18/957914495/data-scientist-rebekah-jones-facing-arrest-turns-herself-in-to-florida-authoriti)
+- [What Has Happened Down Here Is The Winds Have Changed](http://andrewgelman.com/2016/09/21/what-has-happened-down-here-is-the-winds-have-changed/)
+
+On one level, science should just be about the numbers. But it isn't, it never was, and it never will be.
+
+
+
+# Risk
+
+**Warning:** Some of the tables below have embedded LaTeX & look better knitted to HTML.
+
+```{r setup, message = FALSE}
+library(Stat2Data)
 library(tidyverse)
-options(scipen=999)
-data(diamonds)
+options(scipen = 999)
+Appointments <- read_csv("./data/Appointments.csv")
 ```
 
-# Measures of Centrality
+## Risk Ratio
 
-## Height of Adult Women
-
-- The mean (average) and median are the two most common methods for summarizing the central tendency of a data set.
-    - This is not a problem, simply an observation of reality.
-- The example below is from an R data set of heights of women.
-    - This data set contains merely 15 rows of data and should not be treated as canonical.
-- That said, it is a great example of an average tells us something meaningful about the data.
-    - The black line is the density plot. Remember, the area under a density plot = 1.
-    - The average height is marked in red.
-    - The blue lines are for the average +/- twice the standard deviation. These are our 95th percentile markers.
-    - This looks good. Really. It does.
+First, what is the risk of a diabetic patient having a No Show?
 
 ```{r}
-data(women)
-avg_height <- mean(women$height/12)
-sd_height <- sd(women$height/12)
-
-ggplot(women, aes(height/12)) +
-  geom_density() +
-  geom_vline(aes(xintercept = avg_height), color = "red") +
-  geom_vline(aes(xintercept = avg_height + 2 * sd_height), color = "blue") +
-  geom_vline(aes(xintercept =  avg_height - 2 * sd_height), color = "blue")
+## Notice we are saving our results.
+Risk <- 
+  Appointments %>%
+  group_by(Diabetes) %>%
+  summarize(
+    NoShows = sum(NoShow),
+    TotalAppointments = n(),
+    Risk = NoShows/TotalAppointments)
+Risk
 ```
 
-## Insurance Claims Cost
+Thus we can say that being non-diabetic is a risk factor for having a no-show appointment.
 
-- The code I wrote to perform this analsis is in this repo, but the raw data is not.
-    - claims2018.sql The SQL I wrote to export the data from our EDW.
-    - claims2018.R: Imports the data from CSV and calculates the average, etc.
-- I cannot share this data with you because it (obviously) contains PHI.
-    - This data is from 2018, avoiding all impact from Covid, etc.
-    - Members are people living here in the Capital District and surrounding counties.
-        - I am not at liberty to be any more precise than that.
-    - With a few exceptions, all claims are included.
-        - This data set excludes certain claim types which are extra sensitive including some HIV treatments, certain mental health diagnoses, etc.
-    - And what do we find? **CRAZINESS!**
+- **Question:** How do we express a difference in risk between two groups?
+- **Answer:** Risk Ratio
+
+We should formally define risk: The number of events of interest (no shows) divided by the total number of events (appointments). This is ratio with a range of 0 to 1.
+
+|         Group                  |        Formula            |           Math          |
+|:-------------------------------|:-------------------------:|:-----------------------:| 
+| Higher Risk (HR): Not Diabetic | $$no_shows/appointments$$ |  $$0.204=20889/102584$$ |
+| Lower Risk (LR):  Diabetic     | $$no_shows/appointments$$ |  $$0.180=1430/7943$$    |
+
+The value of risk is a number between 0 and 1, unless expressed as a percent of a rate such as events per 1,000 appointments.
+
+The Risk Ratio (RR) comes from epidemiology, which was originally focused on acute illness.
+
+$$1.13 = 0.204/0.180$$
 
 ```{r}
-knitr::include_graphics("images/clams-2018-zoomed-out.png")
+## And we can do this in R.
+Risk %>%
+  summarize(
+    RR = max(if_else(!Diabetes, Risk, 0)) /max(if_else(Diabetes, Risk, 0)),
+    "RR Reversed" = RR = max(if_else(!Diabetes, Risk, 0)) /max(if_else(Diabetes, Risk, 0))
+  )
 ```
 
-- Colors have the same meaning as before however, our average is not even remotely close to the center of our plot.
-    - Some people are really, really expensive.
-- Anytime your 95% confidence interval includes impossible numbers, you probably have a problem.
-    - There are women shorter than 5 feet tall.
-    - Not counting some funkiness around deductions spanning calendar years and what not, people do not have less than $0 healthcare costs.
-        - Says the guy who hasn't seen his PCP in . . . ? years . . . do I even have a PCP? Hmm. I should know the answer to that question.
+Any number greater than 1 means a risk. In this case, patients without diabetes have a 13% greater risk of having a no show than diabetic patients.
 
-Let's "zoom in" on just those patients with less than $50,000 in 2018 costs and include the median, because the median is more resistant to outliers, right?
+# Odds Ratio
 
-- Well, maybe? Our upper limit on the 95% confidence interval is ~$34,500.
-- Would any of you want to argue that the red line is representative of the center of the data?
-- And even the median isn't actually all that great (although it _is_ much better).
+Same thing, but odds rather than percent. Given our structure from above:
+
+|         Group                  |        Formula       |           Math          |
+|:-------------------------------|:--------------------:|:-----------------------:| 
+| Higher Risk (HR): Not Diabetic | $$no_shows/arrived$$ |  $$0.204=20889/102584$$ |
+| Lower Risk (LR):  Diabetic     | $$no_shows/arrived$$ |  $$0.180=1430/7943$$    |
+
+And we can operationalize this in R code as:
 
 ```{r}
-knitr::include_graphics("images/clams-2018-zoomed-in.png")
+Odds <- 
+  Appointments %>%
+  group_by(Diabetes) %>%
+  summarize(
+    NoShows = sum(NoShow),
+    Arrived = sum(!NoShow),
+    Arrived2 = n() - sum(NoShow),
+    Odds = NoShows/Arrived)
+Odds
 ```
 
-- This average is mathematically, the average. It isn't "wrong" but I would argue it isn't very meaningful.
-- Moreover, the median, while better, is also a little weird.
-- And no single summary number, no matter how brilliantly conceived can express the long-tail of this distribution.
-    - A picture really is worth a thousand measures of central tendency.
-    - Because while true, I still think it is misleading to say the median cost was 784 dollars, simply because so many people spent SO MUCH LESS.
-         - In truth, MOST PEOPLE spent less.
-
-
-# Linear Regression
-
-**Question:** Can we predict the price of a diamond?
-**Answer:** Yes, but it is a little harder than you might expect.
-
-And just in case you haven't been reading the book, [tonight's lecture looks very similar to a chapter in our book](https://r4ds.had.co.nz/model-building.html).
-
-Given the data below, we will develop a model to predict the price of a diamond.
+PLEASE OBSERVE the odds are higher than our previously calculated risk scores simply because the denominator is smaller. For rare events, the odds and the risk are nearly identical.
 
 ```{r}
-diamonds
+Odds %>%
+  summarize(
+    OR = max(if_else(!Diabetes, Odds, 0)) / max(if_else(Diabetes, Odds, 0)),
+    "OR Reversed" = max(if_else(Diabetes, Odds, 0)) / max(if_else(!Diabetes, Odds, 0))
+    )
 ```
 
-- At first, this seems like it should be easy, but things are not quite as simple as they appear to be.
-- In the graphs below, be aware: 
-    - The worst diamond color is J (slightly yellow). 
-    - The worst clarity is I1 (inclusions visible to the naked eye).
+AND PLEASE OBSERVE that the Odds Ratio _is_ slightly higher than the Risk Ratio.
+
+The Odds Ratio _can_ overstate the ratio, for common events. Epidemiology is fond of the Odds Ratio rather than the Risk Ratio because there is a beautiful connection between the Odds Ratio and logistic regression.
 
 ```{r}
-ggplot(diamonds, aes(cut, price)) + geom_boxplot()
-ggplot(diamonds, aes(color, price)) + geom_boxplot()
-ggplot(diamonds, aes(clarity, price)) + geom_boxplot()
+model_diabetes <-
+  glm(
+    formula = NoShow~Diabetes,
+    family = binomial,
+    data = Appointments)
+summary(model_diabetes)
 ```
 
-This is . . . . odd? It would seem that crappy diamonds cost more than good diamonds . . . . because of course they do. Maybe.
+
+There is a special relationship between logistic regression and the odds ratio:
 
 ```{r}
-## This draws a hex-scatter plot and rather than count each individual diamond
-## separately, it creates a number of bins (N) across the x and y axis and then
-## reports how many cases (diamonds) are in each bin.
-ggplot(diamonds, aes(carat, price)) + 
-  geom_hex(bins = 50)
+exp(model_diabetes$coefficients)
 ```
 
-- Ahhhhhhhhh. Carat.
-- The WEIGHT/SIZE of the thing matters more than anything else. 
-- And, side-note, that ain't a linear relationship.
-- Which makes sense, because you can see that beyond two carats, there are fewer and fewer diamonds for sale at that weight.
-- And if ~2 is a big diamond, it stands to reason that it might start to have quality problems.
+Which is EXACTLY the same as one of our odds ratios above.
 
-**Question:** So, how do we handle non-linear relationships?
-**Answer:** We log the hell out of them!
+This is useful because logistic regression allows to to model more complex models and relationships than we would ever want to model by hand.
 
-- The linear model assumes a linear relationship between the dependent (price) and independent variable (carat).
-- And we can see this is not even remotely true.
-- To deal with this, we can do two things:
-
-- Focus on diamonds smaller than 2.5 carats (99.7% of the data)
-- Log-transform the carat and price variables.
-
-```{r}
-## Note: I am creating a NEW copy of diamonds.
-## Note 2: I am using mutate to create new columns in the data.
-diamonds2 <- 
-  diamonds %>%
-  filter(carat <= 2.5) %>%
-  mutate(lprice = log2(price),
-         lcarat = log2(carat))
-```
-
-- We don't have time to fully unpack what a logarithm is and how it normalizes our data, so if you would like to take a deep dive into that topic: https://www.youtube.com/watch?v=cEvgcoyZvB4
-- But I do want to prove to you that it works.
-
-```{r}
-ggplot(diamonds2, aes(price)) + geom_density()
-ggplot(diamonds2, aes(lprice)) + geom_density()
-```
-
-- Please note that the SHAPE of the resulting data would be the same regardless of which log we used. 
-- Common options here include natural log (`log()`), base-2 log (`log2()`), and base-10 log (`log10()`).
-- Feel free to play with this code to prove this to yourself.
-- Whew, while it is still multi-modal (because the underlying data is), it does remove our skew.
-
-```{r}
-## Same plot as before, this time using logged data.
-ggplot(diamonds2, aes(lcarat, lprice)) + 
-  geom_hex(bins = 50)
-```
-
-Assumptions of Linear Regression:
-
-- Weak exogeneity: Independent variables are assumed to be error free.
-    - ROTFLMAO!
-    - I mean, sure, we can measure weight well.
-    - Other things? Not so much.
-- Linearity: The relationship between our independent and dependent variable needs to be linear (or nearly so).
-    - OK, we fixed that.
-- Constant variance: Our dependent variable is not assumed to be error free, that we _do_ assume that error is random.
-- Independence of errors. This assumes that the errors of the response variables are uncorrelated with each other.
-- Lack of perfect multicollinearity in the predictors: Your independent variables cannot be correlated.
-    - For example, if color and clarity are correlated, that is bad.
-    
-```{r}
-## Same plot as before, this time using logged data.
-diamonds2 %>%
-  group_by(color, clarity) %>%
-  count() %>%
-  ggplot(aes(color, clarity, fill = n)) + 
-  geom_tile()
-```
-
-- We can reasonably claim these are not perfectly correlated.
-
-```{r}
-mod_diamond <- lm(lprice ~ lcarat, data = diamonds2)
-summary(mod_diamond)
-```
-
-- Let's briefly discuss what it is we have done.
-- We trained this data on the full sample, which we will discuss as less than ideal in the coming weeks.
-- But, what have we really done?
-
-```{r}
-demo <- sample_n(diamonds2, 100)
-demo <- add_predictions(demo, mod_diamond)
-demo %>% 
-  arrange(pred) %>%
-  ggplot() +
-  geom_point(aes(x = lcarat, y = lprice)) +
-  geom_line(aes(x = lcarat, y = pred), color = "blue")
-```
-
-- The vertical difference (positive and negative) between the blue line (our prediction) AND the black dots (real diamond price) are called the residual.
-- And we want these residuals to be normallmod_diamond <- lm(lprice ~ lcarat, data = diamonds2)
-summary(mod_diamond)y distributed.
-- The goal of any model is to reduce this size of the residuals.
-
-```{r}
-demo <- add_residuals(demo, mod_diamond)
-demo %>%
-  ggplot(aes(resid)) + geom_density()
-```
-
-And we can see that our residuals are not perfectly distributed, but not terribly so. Perhaps we can better understand what is going on here.
-
-```{r}
-ggplot(demo, aes(cut, resid)) + geom_boxplot()
-ggplot(demo, aes(color, resid)) + geom_boxplot()
-ggplot(demo, aes(clarity, resid)) + geom_boxplot()
-```
-
-- Cut, color, and clarity have a relationship with our residuals.
-- And the strongest appears to be clarity.
-
-```{r}
-mod_diamond2 <- lm(lprice ~ lcarat + clarity, data = diamonds2)
-summary(mod_diamond2)
-```
-- Using clarity, we went from an R-squared of .9334 to .9655.
-- Remember, R^2 is the percent of the variation in lprice explained by the model.
-- And we can prove that clarity was the next most important variable.
-
-```{r}
-demo <- add_residuals(demo, mod_diamond2)
-demo <- add_predictions(demo, mod_diamond2)
-demo %>%
-  ggplot(aes(resid)) + geom_density()
-```
-
-And, you can see that we have:
-
-- Reduced the min/max of our residuals.
-- Our residuals are more normally distributed.
-- And we can look at our actual results.
-
-```{r}
-demo %>%
-  mutate(true_predicted_price = 2^pred) %>%
-  select(price, true_predicted_price)
-```
-
-- And, we can see that this is a pretty legitimate model.
-- In an upcoming lab, you will get to explore different ways to make it better.
-
-# More reading:
- - https://www.statisticssolutions.com/assumptions-of-linear-regression/
- - https://en.wikipedia.org/wiki/Linear_regression
- 
- 
