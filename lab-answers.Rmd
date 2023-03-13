@@ -101,7 +101,7 @@ Many thanks to the late Professor Bob Black at Cornell College for sharing these
 
 - Because I'm a bird brain, we shall continue to focus on body mass of birds.
 - Because why not?
-- Be sure to PLOT and MODEL as appropriate.
+- Be sure to PLOT and MODEL each of these as appropriate.
   - A model without a plot is a dangerous thing.
 
 ## Task 01
@@ -113,7 +113,15 @@ I'd like to better understand the average body weight difference between an imma
   - Plot this using ggplot using the box-plot geom.
 - **Answer:** 
 
-YOUR CODE HERE!
+```{r}
+ggplot(hawks, aes(x = age, y = weight)) +
+  geom_boxplot()
+```
+
+```{r}
+lm_age <- lm(weight ~ age, data = hawks)
+summary(lm_age)
+```
 
 ## Task 02
 
@@ -123,7 +131,23 @@ Do these results surprise you? Starting with your plot from Task 01, can you dig
   - Hint: The answer is a categorical variable!
 - **Answer:** 
 
-YOUR CODE HERE!
+```{r}
+ggplot(hawks, aes(x = age, y = weight)) +
+  geom_boxplot() +
+  facet_wrap(~species)
+
+ggplot(hawks, aes(x = age)) +
+  geom_bar() +
+  facet_wrap(~species)
+
+ggplot(hawks, aes(x = age, y = weight)) +
+  geom_boxplot() +
+  facet_wrap(~sex)
+
+ggplot(hawks, aes(x = age)) +
+  geom_bar() +
+  facet_wrap(~sex)
+```
 
 
 ## Task 03
@@ -139,7 +163,20 @@ I would like to know if adult Red-Tailed hawks got heavier, lighter, or stayed t
     - What do you think this means in this context?
 - **Answer:** 
 
-YOUR CODE HERE!
+```{r}
+ggplot(
+  data = hawks |> filter(age == "A", species == "RT"),
+  aes(x = capture_date, y = weight)
+) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm_capture_date <- lm(
+  weight ~ capture_date,
+  data = hawks |> filter(age == "A", species == "RT")
+)
+summary(lm_capture_date)
+```
 
 
 ## Task 04:
@@ -155,7 +192,23 @@ As always, I recommend graphing this AND building the model. For this task, buil
 - lm_wing
 - lm_tail
 
-YOUR CODE HERE!
+```{r}
+ggplot(hawks, aes(x = wing, y = weight)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm_wing <- lm(weight ~ wing, data = hawks)
+summary(lm_wing)
+```
+
+```{r}
+ggplot(hawks, aes(x = tail, y = weight)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm_tail <- lm(weight ~ tail, data = hawks)
+summary(lm_tail)
+```
 
 
 ## Task 05:
@@ -163,14 +216,28 @@ YOUR CODE HERE!
 - **Question:** Plot the distribution of the residuals of lm_wing using geom_density and geom_qq. Do these residual values appear to be normally distributed?
 - **Answer:** 
 
-YOUR CODE HERE!
+```{r}
+ggplot(hawks |> add_residuals(lm_wing), aes(resid)) +
+  geom_density()
+
+ggplot(hawks |> add_residuals(lm_wing), aes(sample = resid)) +
+  geom_qq() +
+  geom_qq_line()
+```
 
 ## Task 06:
 
 - **Question:** Plot residuals as a function of predicted values. Do our errors look homogenous?
 - **Answer:** 
 
-YOUR CODE HERE!
+```{r}
+ggplot(
+  data = hawks |> add_residuals(lm_wing) |> add_predictions(lm_wing),
+  aes(x = pred, y = resid, color = species)
+) +
+  geom_point() +
+  geom_smooth()
+```
 
 ## Task 07:
 
@@ -180,7 +247,70 @@ YOUR CODE HERE!
   - Call your new model lm_wing_species.
 - **Answer:** 
 
-YOUR CODE HERE!
+```{r}
+ggplot(hawks, aes(x = wing, y = weight, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm_wing_species <- lm(weight ~ wing, data = hawks)
+summary(lm_wing)
+```
+
+But we could do this.
+
+```{r}
+hawks |>
+  group_by(species) |>
+  summarize(
+    avg_weight = mean(weight, na.rm = TRUE),
+    sd_weight = sd(weight, na.rm = TRUE),
+    avg_wing = mean(wing, na.rm = TRUE),
+    sd_wing = sd(wing, na.rm = TRUE)
+  ) |>
+  mutate(
+    min_weight = avg_weight - 2 * sd_weight,
+    max_weight = avg_weight + 2 * sd_weight,
+    min_wing = avg_wing - 2 * sd_wing,
+    max_wing = avg_wing + 2 * sd_wing
+  ) |>
+  select(species, min_weight, max_weight, min_wing, max_wing)
+
+hawks <-
+  hawks |>
+  mutate(
+    not_extreme = case_when(
+      species == "CH" & (weight < 96.4 | weight > 745) ~ FALSE,
+      species == "CH" & (wing < 180 | wing > 308) ~ FALSE,
+      species == "RT" & (weight < 716 | weight > 1473) ~ FALSE,
+      species == "RT" & (wing < 320 | wing > 446) ~ FALSE,
+      species == "SS" & (weight < -13.3 | weight > 309) ~ FALSE,
+      species == "SS" & (wing < 140 | wing > 230) ~ FALSE,
+      TRUE ~ TRUE
+    )
+  )
+
+hawks |>
+  filter(!not_extreme) |>
+  count(species)
+
+ggplot(
+  hawks |> filter(not_extreme),
+  aes(x = wing, y = weight, color = species)
+) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm_wing_species_no_outliers <-
+  lm(weight ~ wing * species, data = hawks |> filter(!not_extreme))
+summary(lm_wing_species_no_outliers)
+
+hawks |>
+  filter(not_extreme) |>
+  add_residuals(lm_wing_species_no_outliers) |>
+  ggplot(aes(sample = resid)) +
+  geom_qq() +
+  geom_qq_line()
+```
 
 ## Task 08:
 
@@ -191,5 +321,3 @@ The following questions are based on the plot you created for Task 07. This plot
 
 - **Question:** Given a hypothetical hawk of weight 200 and wing length 200. Guess which species this hawk is most likely to be. How confident are you that your guess is correct? (High, Medium, Low) 
 - **Answer:** 
-
-Note: You do not need to write any additional code for this task.
