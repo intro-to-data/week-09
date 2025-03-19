@@ -1,0 +1,220 @@
+---
+title: "Simple & Multiple Linear Regression"
+format: html
+---
+
+
+
+Goals
+================================================================================
+
+- Build more linear regressions.
+- Practice importing data and creating your own code chunks.
+- This lab is going to make you think more than some of the others. 
+- It is OK to work with others.
+
+
+
+Setup
+================================================================================
+
+- If you ran the code in lecture.qmd, you created several objects in your 
+  global environment.
+    - `lm_multiple`
+    - `lm_simple`
+    - `plt_region`
+    - `plt_resit`
+    - etc.
+- Hit the 🧹 button in the Environment pane, to delete all of these objects
+  BEFORE you run the setup chunk below.
+
+
+## Task 00
+
+Finish importing the insurance data. As you can see, the code-chunk below is
+incomplete. Complete the process of importing the insurance data to begin this
+week's lab.
+
+```{r}
+#| label: setup
+#| include: false
+
+library(gt)
+library(patchwork)
+library(tidymodels)
+library(tidyverse)
+
+# Mostly disables scientific notation
+options(scipen = 999)
+
+# How do you import the insurance data stored in the data folder?
+insurance <- ???
+
+```
+
+
+
+Data - Insurance
+================================================================================
+
+## Description:
+
+Insurance charges
+
+## Format:
+
+A data frame with 1,338 observations of seven variables.
+
+- age: Enrollee age (years)
+- sex: Enrollee sex (female, male)
+- bmi: Enrollee BMI
+- children: Number of children in the family
+- smoker: Enrollee smoker status (yes, no)
+- region: Enrollee region (southwest, southeast, etc.)
+- charges: Total charges, in dollars
+
+
+
+Lab
+================================================================================
+
+
+## Task 01
+
+Create a simple linear model, `lm_multiple`, based on the simple linear regression
+  model introduced in the lecture.
+
+- **Question:** What percent of the variance in charges are explained by age and smoking status?
+- **Answer:** ,721, 72.1
+- Helpful Hints:
+    - Copy the code from lecture.qmd where we create `lm_simple`.
+    - Paste that code here, and create lm_age
+
+
+## Task 02
+
+In the lecture, we evaluated the ggplot of charges as a function of age. For
+this task, plot charges as a function of bmi.
+
+- **Question:** Is there a linear relationship between bmi and charges?
+- **Answer:** 
+    - This is not a simple Yes/No answer.
+    - I want you to say Yes, No, or Depends.
+    - But I want you to use your answer with your plot(s).
+    - If your answer is "it depends", I want you to tell me what other feature
+      we need to incorporate for it to be a linear relationship.
+- Helpful Hints:
+    - Draw both the scatter plot and the linear model using ggplot.
+    - Look for bow-ties and mega-phone shapes.
+    - This is another kind of "banding".
+    - Yes, you are probably looking for a categorical.
+
+
+YOUR CODE CHUNK GOES HERE!!!
+
+
+## Task 03
+
+Create a model `lm_lab`, which models charges as a function of bmi and smoking
+status.
+
+- **Question:** What percent of the variance in charges are explained by bmi and
+  smoking status?
+- **Answer:** .658, 65.8
+- Helpful Hints:
+    - Use the code from lm_multiple to do this.
+
+
+YOUR CODE CHUNK GOES HERE!!!
+
+
+## Task 04
+
+In `lm_lab`, you (hopefully) wrote a formula that looks like:
+
+`charges ~ bmi + smoker`
+
+If you didn't, change your formula to this and then answer the following
+question.
+
+- **Question:** What is the coefficient for BMI telling us?
+- **Answer:** For every one unit increase in BMI, charges go up by $388 dollars.
+- Helpful Hints:
+    - Give me one-two sentences.
+    - I want to know how to interpret/understand this coefficient.
+
+
+YOUR CODE CHUNK GOES HERE!!!
+
+
+## Task 05
+
+Create a model, `lm_combined`. This model should use age, bmi, and smoking
+status to predict charges.
+
+- **Question:** Plot the density plot of the residuals from `lm_lab` and
+  `lm_combind`. Tell me how they differ.
+- **Answer:** 
+- Helpful Hints:
+    - In the lecture, I showed a complicated trick that let me superimpose the two plots.
+    - You do not have to do this.
+    - You can use your models, augment, and pipe data to ggplot to create two separate plots.
+    - Upload your plot(s) to Canvas and use these to support your answer.
+
+
+YOUR CODE CHUNK GOES HERE!!!
+
+
+## Task 06
+
+In `lm_combined`, you (hopefully) wrote a formula that looks like:
+
+`charges ~ age + bmi + smoker`
+
+The order of the independent variables DOES NOT MATTER. But, we can do more with our formula than we have thus far. Change your formula to:
+
+`charges ~ age : smoker + bmi : smoker`
+
+This gives us an "interaction" affect showing a divergent slope for age ~ smoker status and a divergent slope for bmi ~ smoker status.
+
+- **Question:** Look at the distribution of your residuals AND look at the
+  output of your model. What is age:smokerno vs age:smokeryes telling you?
+- **Answer:** These are giving us different values for the slopes for when
+  people are smokers or not. According to this model, smokers get expense less
+  quickly as a function of age.
+
+
+YOUR CODE CHUNK GOES HERE!!!
+
+
+## Task 07
+
+
+- **Question:** Based on this model, `lm_combined`, which is more likely to lead
+  to high insurance charges? Being a smoker and getting old or being a smoker
+  and having a high BMI?
+- **Answer:** Being a smoker and having a high BMI, because for every year
+  someone gets older as a smoker, their charges go up more slowly than
+  non-smokers. However, the cost of high BMI is much higher than non-smokers.
+
+
+NO ADDITIONAL CODE NEEDED!!!
+
+
+## Task 08
+
+Change the formula in lm_combined to:
+
+`charges ~ age : smoker + bmi : smoker + smoker`
+
+This gives us one final intercept for smokers and another intercept for
+non-smokers.
+
+- **Question:** What is the smokeryes variable telling us about the intercept
+  for smokers? Is the intercept value for smokers higher or lower compared to
+  non-smokers?
+- **Answer:** These are giving us different values for the slopes for when
+  people are smokers or not.
+
+
+YOUR CODE CHUNK GOES HERE!!!

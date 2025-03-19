@@ -1,0 +1,381 @@
+---
+title: "Simple & Multiple Linear Regression"
+format: html 
+---
+
+
+
+Goals
+================================================================================
+
+- Recap: Simple Linear Regression (SLR)
+    - Detailed example (insurance charges)
+    - Assumptions/rules
+- Introduce: Multiple Linear Regression (MLR)
+    - Formula
+    - Example: extending our model from SLR
+    - Assumptions/rules
+
+
+```{r}
+#| label: setup
+#| include: false
+
+library(gt)
+library(patchwork)
+library(tidymodels)
+library(tidyverse)
+
+insurance <- read_csv("data/insurance.csv")
+
+# Mostly disables scientific notation
+options(scipen = 999)
+
+```
+
+
+
+Simple Linear Regression
+================================================================================
+
+Last week, we introduced Simple Linear Regression. This just means we modeled a
+variable y as a function of a variable x. For example, earlier in the semester,
+you created the following plot.
+
+
+```{r}
+
+ggplot(insurance, aes(x = age, y = charges)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+```
+
+- At the time I asked you if there appeared to be a relationship between age and
+charges. Hopefully, you answered affirmatively.
+- Last week, we learned how to calculate the regression line shown in the above
+  plot.
+- This week, we will go further and try to better understand what makes SLR so
+  powerful.
+- First, we will create a model, called `lm_simple` which models insurance
+  charges as a function of age.
+    - We can see it, but ggplot doesn't give us all the details.
+
+
+```{r}
+
+# Build the model
+lm_simple <-
+  linear_reg() |>
+  fit(charges ~ age, data = insurance)
+
+# See the model coefficients (rounded)
+lm_simple
+
+# See the model details.
+glance(lm_simple)
+
+```
+
+- On average, people get $258 more expensive for year aged.
+- Although statistically significant, this model only explains 9% of the
+  variance in cost.
+      - This is not actually a very good model.
+- Of course, you already knew that, just by looking at the first plot.
+- One important way to evaluate a model is to look at the residuals.
+    - Residuals are the difference between the actual value and the predicted
+      value.
+- The following code adds the residuals from `lm_simple` to the insurance data.
+    - Tidymodels can "augment" our data, by adding predicted values `.pred` and
+      residuals `.resid` to our data.
+
+
+```{r}
+
+# By default, .pred and .resid become the first two columns.
+# I am moving them to the end to make it easier to read.
+insurance <-
+  lm_simple |>
+  augment(insurance) |>
+  select(
+    age,
+    sex,
+    bmi,
+    children,
+    smoker,
+    region,
+    charges,
+    # Changing these column names will make sense later.
+    pred_simple = .pred,
+    resid_simple = .resid
+  ) 
+
+# We will use the first TWO rows of our data to better understand this.
+insurance |> head(2)
+
+```
+
+
+Unpacking SLR
+--------------------------------------------------------------------------------
+
+- **Question:** Why does the model predict $8,063 for the first row?
+- **Answer:** Because, linear regression.
+
+$$y = a \cdot x + b$$
+
+- `y` is the predicted insurance cost ($8,062.614)
+- `a` is the the slope of the model, the increase in member charges for every
+  year older ($257.7226)
+- `x` is the age of the member (19)
+- `b` is the intercept value ($3,165.8850)
+- Note: The values shown when you call the model are rounded for clarity.
+    - To access more exact estimates: `lm_simple$fit$coefficients`
+    - You don't need to know how to do this, but I wanted the numbers to work.
+
+Pull out your phone and do the arithmetic with me.
+
+$$257.7226 \cdot 19 + 3,165.8850$$
+
+- Is there some rounding going on? Yes. Does this work? yes
+- But . . . Residuals.
+- **Row 1:** A 19 year old with nearly $17,000 in charges.
+    - Predicted cost: $8,063
+    - `16885 - 8063 = 8822`
+- **Row 2:** An 18 year old with about $1,700 in charges.
+    - Predicted cost: $7,805
+    - `1726-7805 = -6079`
+- The difference in the predicted cost between our 18 year old and 19 year
+  old?
+    - `8063 - 8705 = 258`
+- There are (many) other factors affecting charges which are not accounted for
+  in this model, but the model is internally consistent.
+      - But it isn't a very good model.
+      - Look, number of people with similar actual costs is basically . . . . nobody.
+- One way to evaluate a SLR is to look at the average and standard deviation of
+  the residuals.
+    - Visually, this looks like the observed values sitting close to the
+      predicted values (regression line).
+    - Although our AVERAGE residual is small, the standard deviation is more
+      than $11,000.
+- We also want our residuals to be normally distributed.
+    - Which they are not. At all.
+- See below:
+
+
+```{r}
+
+tbl_resid <- 
+  insurance |>
+  summarize(
+    avg_residual = format(mean(resid_simple), scientific = F),
+    sd_residual = sd(resid_simple)
+  )
+
+plt_resid <-
+  insurance |>
+  ggplot(aes(x = resid_simple)) +
+  geom_density(color = "darkred") +
+  xlab("Model Residuals")
+
+plt_resid / wrap_table(tbl_resid)
+
+```
+
+- We've already talked about this.
+- Last time we looked at this data, we discussed the prominent banding in the
+  scatter plot.
+
+
+```{r}
+
+ggplot(insurance, aes(x = age, y = charges)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+```
+
+- At the time, I asked you to tell me which variable best "explained" this
+  banding:
+    - `sex`
+    - `smoker`
+    - `region`
+- I asked you to plot the data three times to determine which feature did the
+  best job separating the bands.
+
+```{r}
+
+plt_sex <-
+  ggplot(insurance, aes(x = age, y = charges, color = sex)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+plt_smoker <-
+  ggplot(insurance, aes(x = age, y = charges, color = smoker)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+plt_region <-
+  ggplot(insurance, aes(x = age, y = charges, color = region)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+(plt_sex / plt_smoker / plt_region)
+
+```
+
+Of these three options, `smoker`, does the best job explaining the three bands.
+
+
+
+```{r}
+
+plt_smoker
+
+```
+
+
+Assumptions/Rules
+--------------------------------------------------------------------------------
+
+- **Continuous Dependent Variable:** The dependent variable must be
+  continuous.
+- **Linearity:** The relationship between the dependent and independent
+  variable must be linear.
+    - Apply the "eye-ball" test.
+- **Independence of errors:** There is not a relationship between the residuals
+and the dependent variable; in other words, residual is independent of errors.
+- **Normality of errors:** The residuals must be approximately normally
+  distributed.
+    - Use a density plot/histogram.
+- **Equal variances:** The variance of the residuals is the same for all values
+  of the independent variable.
+    - Avoid Bow-tie, megaphone variances.
+- **No Significant Outliers:** The model cannot be driven by outlier or
+  highly influential points.
+
+
+Multiple Linear Regression
+================================================================================
+
+We have already defined Simple Linear Regression as:
+
+$$y = a \cdot x + b$$
+
+Multiple Linear Regression takes this one step farther and says that for any
+arbitrary number of independent variables, `x`, we define `y` as:
+
+$$y = a_1 \cdot x_1 + b_1 + a_2 \cdot x_2 + b_2 + a_i \cdot x_i + b_1 $$
+
+- There is no technical limit to the number of features we can add to our model.
+- That said, the goal is to create a generalized model which will work beyond
+  the data used to train (fit) the model.
+    - Each additional independent variable makes understanding the model more
+      complex.
+    - Adding too many variables is called over-fitting the model.
+    - This can cause the model to work well for the data used to train the
+      model, but not work well with new cases.
+- To add `smoker` to our simple linear regression, we can simply add the
+  variable to our model formula.
+- The following code chunk creates a new model, `lm_multiple`, which uses both
+  age and smoking status to explain insurance charges.
+
+
+```{r}
+
+lm_multiple <-
+  linear_reg() |>
+  fit(formula = charges ~ age + smoker, data = insurance)
+lm_multiple
+glance(lm_multiple)
+
+```
+
+Once we have our new model, we can use `augment()` to add our predicted values
+back into insurance and to review the impact on our residuals.
+
+
+
+```{r}
+
+# By default, .pred and .resid become the first two columns.
+# I am moving them to the end to make it easier to read.
+insurance <-
+  lm_multiple |>
+  augment(insurance) |>
+  select(
+    age,
+    sex,
+    bmi,
+    children,
+    smoker,
+    region,
+    charges,
+    # NOW I hope this makes sense!!
+    pred_simple,
+    resid_simple,
+    pred_multiple = .pred,
+    resid_multiple = .resid
+  ) 
+
+# We will use the first TWO rows of our data to better understand this.
+insurance |> head(2)
+
+```
+
+For our 19 year old smoker, our equation becomes:
+
+$$274.9 \cdot 19 + $2,3885.5 + -2391.6$$
+
+While for our 18 year old non-smoker, our equation is:
+
+$$274.9 \cdot 18 + 0 + -2391.6$$
+
+Please note that while the predicted charges for these two cases are quite
+different, the only information used to predict charges are age and smoking
+status. Sex, BMI, Region, etc. are not used to predict charges. You could make a
+more complex model, but we won't do so during this lecture.
+
+Because I want to review how this more complex model impacts the over-all
+distribution of our residuals:
+
+
+```{r}
+
+tbl_resid <- 
+  insurance |> summarize(
+  avg_residual_simple = format(mean(resid_simple), scientific = F),
+  sd_residual_simple = sd(resid_simple),
+  avg_residual_multiple = format(mean(resid_multiple), scientific = F),
+  sd_residual_multiple = sd(resid_multiple)
+  )
+
+plt_resid <-
+  insurance |>
+  ggplot(aes(x = resid_simple)) +
+  geom_density(color = "darkred") +
+  geom_density(mapping = aes(x = resid_multiple), color = "darkblue") +
+  xlab("Model Residuals")
+
+plt_resid / wrap_table(tbl_resid)
+
+```
+
+- In both `lm_simple` and `lm_multiple`, the average residual is small.
+- This is because it is the total AVERAGE of all the residuals.
+- But the standard deviation went from $11,556 to $6,392.
+- And you can see in the density plot that the residuals come closer to being
+  normally distributed.
+
+**Both simple and multiple linear regressions are powerful tools.**
+
+
+Assumptions/rules
+--------------------------------------------------------------------------------
+
+- All rules from SLR carry-over to MLR.
+- **Multiple Independent Variables:** Must have two or more independent
+  variables.
+    - These can be continuous or categorical.
+- **Multicollinearity:** Independent variables may not be highly correlated with
+  each other.

@@ -1,13 +1,11 @@
 ## Simple script used to install all packages needed by the lecture/lab.
 
 p <- c(
-  "janitor",
+  "gt",
   "knitr",
-  "lubridate",
   "markdown",
-  "modelr",
-  "rmarkdown",
-  "shiny",
+  "patchwork",
+  "tidymodels",
   "tidyverse",
   "Stat2Data"
 )
