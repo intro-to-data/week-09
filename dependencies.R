@@ -11,4 +11,4 @@ p <- c(
 )
 install.packages(p)
 
-unlink("lab-answers.Rmd")
+unlink("lab-answers.qmd")
